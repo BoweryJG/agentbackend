@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: agentbackend
+    runtime: node
+    region: oregon
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: ANTHROPIC_API_KEY
+        sync: false # Add via Render dashboard
+      - key: ALLOWED_ORIGINS
+        value: https://osbackend-zl1h.onrender.com,https://agent-command-center.onrender.com,https://pedrobackend.onrender.com,http://localhost:3000,http://localhost:3001,http://localhost:5173
+      - key: RATE_LIMIT_WINDOW_MS
+        value: 900000
+      - key: RATE_LIMIT_MAX_REQUESTS
+        value: 100
+      - key: LOG_LEVEL
+        value: info
