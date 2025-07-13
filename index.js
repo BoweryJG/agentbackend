@@ -89,14 +89,14 @@ import authRoutes from './routes/auth.js';
 import agentRoutes from './routes/agents.js';
 import chatRoutes from './routes/chat.js';
 import deploymentRoutes from './routes/deployment.js';
-// import voiceRoutes from './routes/voice.js';
+import voiceRoutes from './routes/voice.js';
 
 // Use routes
 app.use('/api/auth', authRoutes);
 app.use('/api/agents', agentRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/deploy', deploymentRoutes);
-// app.use('/api/voice', voiceRoutes);
+app.use('/api/voice', voiceRoutes);
 
 // WebSocket connection handling
 io.on('connection', (socket) => {
@@ -113,6 +113,71 @@ io.on('connection', (socket) => {
     socket.emit('chat:response', {
       message: 'Response from agent - full implementation coming soon',
       agentId: data.agentId,
+    });
+  });
+
+  // Voice/WebRTC related events
+  socket.on('voice:join-session', (data) => {
+    logger.info('Voice session join request', { sessionId: data.sessionId, socketId: socket.id });
+    socket.join(`voice:${data.sessionId}`);
+    socket.emit('voice:session-joined', { sessionId: data.sessionId });
+  });
+
+  socket.on('voice:leave-session', (data) => {
+    logger.info('Voice session leave request', { sessionId: data.sessionId, socketId: socket.id });
+    socket.leave(`voice:${data.sessionId}`);
+    socket.emit('voice:session-left', { sessionId: data.sessionId });
+  });
+
+  socket.on('webrtc:offer', (data) => {
+    logger.info('WebRTC offer received', { sessionId: data.sessionId, socketId: socket.id });
+    // Broadcast offer to other participants in the session
+    socket.to(`voice:${data.sessionId}`).emit('webrtc:offer', {
+      offer: data.offer,
+      from: socket.id,
+      sessionId: data.sessionId
+    });
+  });
+
+  socket.on('webrtc:answer', (data) => {
+    logger.info('WebRTC answer received', { sessionId: data.sessionId, socketId: socket.id });
+    // Broadcast answer to other participants in the session
+    socket.to(`voice:${data.sessionId}`).emit('webrtc:answer', {
+      answer: data.answer,
+      from: socket.id,
+      sessionId: data.sessionId
+    });
+  });
+
+  socket.on('webrtc:ice-candidate', (data) => {
+    logger.info('ICE candidate received', { sessionId: data.sessionId, socketId: socket.id });
+    // Broadcast ICE candidate to other participants in the session
+    socket.to(`voice:${data.sessionId}`).emit('webrtc:ice-candidate', {
+      candidate: data.candidate,
+      from: socket.id,
+      sessionId: data.sessionId
+    });
+  });
+
+  socket.on('voice:transcription', (data) => {
+    logger.info('Voice transcription received', { sessionId: data.sessionId, socketId: socket.id });
+    // Broadcast transcription to session participants
+    socket.to(`voice:${data.sessionId}`).emit('voice:transcription', {
+      text: data.text,
+      from: socket.id,
+      sessionId: data.sessionId,
+      timestamp: new Date().toISOString()
+    });
+  });
+
+  socket.on('voice:agent-response', (data) => {
+    logger.info('Agent voice response', { sessionId: data.sessionId, agentId: data.agentId, socketId: socket.id });
+    // Broadcast agent response to session participants
+    socket.to(`voice:${data.sessionId}`).emit('voice:agent-response', {
+      response: data.response,
+      agentId: data.agentId,
+      sessionId: data.sessionId,
+      timestamp: new Date().toISOString()
     });
   });
 
