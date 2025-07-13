@@ -1,0 +1,30 @@
+{
+  "test-practice-001": {
+    "client_id": "test-practice-001",
+    "agents": [
+      {
+        "agent_id": "gina",
+        "config": {
+          "customGreeting": "Welcome to Test Practice!",
+          "workingHours": "9AM-5PM EST"
+        },
+        "deployed_at": "2025-07-13T14:46:52.309Z",
+        "active": false,
+        "removed_at": "2025-07-13T14:46:52.319Z"
+      },
+      {
+        "agent_id": "teresa",
+        "config": {
+          "customGreeting": "Hi, I'm Teresa from Test Practice!",
+          "specialties": [
+            "Anxiety management",
+            "Pediatric care"
+          ]
+        },
+        "deployed_at": "2025-07-13T14:46:52.315Z",
+        "active": true
+      }
+    ],
+    "created_at": "2025-07-13T14:46:52.309Z"
+  }
+}
