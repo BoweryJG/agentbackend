@@ -27,6 +27,9 @@ const logger = winston.createLogger({
 const app = express();
 const server = createServer(app);
 
+// Trust proxy for rate limiting on Render
+app.set('trust proxy', 1);
+
 // Initialize Socket.IO for real-time communication
 const io = new Server(server, {
   cors: {
