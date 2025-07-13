@@ -39,5 +39,8 @@
   },
   "active": true,
   "language": "en",
-  "priority": 3
+  "priority": 3,
+  "category": "healthcare",
+  "subcategory": "dental",
+  "targetAudience": ["patients", "office-management"]
 }

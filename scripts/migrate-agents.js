@@ -217,6 +217,9 @@ const agents = [
 
 // Function to convert agent to standardized format
 function standardizeAgent(agent) {
+  // Determine target audience based on agent role and specialties
+  const targetAudience = determineTargetAudience(agent);
+  
   return {
     id: agent.id,
     name: agent.name,
@@ -257,8 +260,49 @@ function standardizeAgent(agent) {
     active: true,
     language: agent.personality.language ? 
       (agent.personality.language.includes('Spanish') ? 'es' : 'en') : 'en',
-    priority: 10
+    priority: 10,
+    category: 'healthcare',
+    subcategory: 'dental',
+    targetAudience: targetAudience
   };
+}
+
+// Function to determine target audience based on agent characteristics
+function determineTargetAudience(agent) {
+  const audiences = [];
+  
+  // Check for Spanish/bilingual capabilities
+  if (agent.personality.language && agent.personality.language.includes('Spanish')) {
+    audiences.push('spanish-speakers');
+  }
+  if (agent.personality.language && agent.personality.language.includes('/')) {
+    audiences.push('bilingual');
+  }
+  
+  // Based on role
+  const roleMap = {
+    'Treatment Coordinator': ['patients', 'scheduling'],
+    'Patient Advocate': ['patients', 'families', 'anxiety-management'],
+    'Operations Chief': ['patients', 'operations'],
+    'Community Liaison': ['new-patients', 'community'],
+    'Tech Specialist': ['tech-savvy', 'innovative-treatments'],
+    'Scheduling Coordinator': ['scheduling'],
+    'Clinical Coordinator': ['clinical-coordination'],
+    'Head Dentist': ['patients', 'dental-professionals'],
+    'Office Manager': ['patients', 'office-management'],
+    'Senior Advisor': ['patients', 'complex-cases'],
+    'Care Coordinator': ['patients', 'general-care'],
+    'Dental Assistant': ['patient-care'],
+    'Spanish Specialist': ['spanish-speakers', 'consultations'],
+    'Spanish Advisor': ['spanish-speakers', 'insurance', 'treatment-planning']
+  };
+  
+  if (roleMap[agent.role]) {
+    audiences.push(...roleMap[agent.role]);
+  }
+  
+  // Remove duplicates
+  return [...new Set(audiences)];
 }
 
 // Migrate all agents

@@ -47,5 +47,8 @@
   },
   "active": true,
   "language": "en",
-  "priority": 10
+  "priority": 10,
+  "category": "healthcare",
+  "subcategory": "dental",
+  "targetAudience": ["patients", "scheduling"]
 }

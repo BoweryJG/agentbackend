@@ -2,6 +2,7 @@ import express from 'express';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { authenticate, authorize, authorizeClient, ROLES } from '../middleware/auth.js';
 
 const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
@@ -26,8 +27,8 @@ async function saveDeployments(deployments) {
   await fs.writeFile(deploymentsFile, JSON.stringify(deployments, null, 2));
 }
 
-// POST /api/deploy/:clientId/:agentId - Deploy agent to client
-router.post('/:clientId/:agentId', async (req, res) => {
+// POST /api/deploy/:clientId/:agentId - Deploy agent to client (admin or authorized client)
+router.post('/:clientId/:agentId', authenticate, authorizeClient, async (req, res) => {
   try {
     const { clientId, agentId } = req.params;
     const { config = {} } = req.body;
@@ -89,8 +90,8 @@ router.post('/:clientId/:agentId', async (req, res) => {
   }
 });
 
-// GET /api/clients/:clientId/agents - Get client's deployed agents
-router.get('/:clientId/agents', async (req, res) => {
+// GET /api/deploy/:clientId/agents - Get client's deployed agents (admin or authorized client)
+router.get('/:clientId/agents', authenticate, authorizeClient, async (req, res) => {
   try {
     const { clientId } = req.params;
     const deployments = await loadDeployments();
@@ -141,8 +142,8 @@ router.get('/:clientId/agents', async (req, res) => {
   }
 });
 
-// DELETE /api/deploy/:clientId/:agentId - Remove agent from client
-router.delete('/:clientId/:agentId', async (req, res) => {
+// DELETE /api/deploy/:clientId/:agentId - Remove agent from client (admin or authorized client)
+router.delete('/:clientId/:agentId', authenticate, authorizeClient, async (req, res) => {
   try {
     const { clientId, agentId } = req.params;
     const deployments = await loadDeployments();
@@ -184,10 +185,9 @@ router.delete('/:clientId/:agentId', async (req, res) => {
   }
 });
 
-// GET /api/deployments - Get all deployments (admin)
-router.get('/', async (req, res) => {
+// GET /api/deploy - Get all deployments (admin only)
+router.get('/', authenticate, authorize(ROLES.ADMIN), async (req, res) => {
   try {
-    // TODO: Add admin authentication
     const deployments = await loadDeployments();
     
     res.json({

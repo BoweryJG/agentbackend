@@ -1,0 +1,55 @@
+AGENT CATEGORY FEATURES
+=====================
+
+This document describes the new category features added to the agentbackend API.
+
+NEW FIELDS ADDED TO AGENTS:
+- category: Main category of the agent (e.g., "healthcare")
+- subcategory: Specific subcategory (e.g., "dental")
+- targetAudience: Array of target audience tags (e.g., ["patients", "spanish-speakers"])
+
+API ENDPOINTS:
+
+1. GET /api/agents
+   Now supports additional query parameters:
+   - category: Filter by main category
+   - subcategory: Filter by subcategory
+   - targetAudience: Filter by target audience tag
+   - language: Existing language filter (still supported)
+   
+   Examples:
+   - /api/agents?category=healthcare
+   - /api/agents?subcategory=dental
+   - /api/agents?targetAudience=spanish-speakers
+   - /api/agents?category=healthcare&language=es
+
+2. GET /api/agents/categories
+   New endpoint that returns available categories, subcategories, and target audiences
+   
+   Response format:
+   {
+     "success": true,
+     "categories": ["healthcare"],
+     "subcategories": ["dental"],
+     "targetAudiences": ["patients", "spanish-speakers", "scheduling", ...]
+   }
+
+3. GET /api/agents/search/:query
+   Search now includes category fields in the search criteria
+
+CURRENT CATEGORIZATION:
+All 15 agents from Pedro have been categorized as:
+- category: "healthcare"
+- subcategory: "dental"
+- targetAudience: Various tags based on their role and capabilities
+
+MIGRATION SCRIPT UPDATES:
+The migrate-agents.js script now automatically assigns categories to new agents based on:
+- Role
+- Language capabilities
+- Specialties
+
+To run the test script:
+node test-categories.js
+
+This will verify all category filtering and search functionality.

@@ -2,6 +2,7 @@ import express from 'express';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { authenticate, authorize, ROLES } from '../middleware/auth.js';
 
 const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
@@ -50,10 +51,26 @@ router.get('/', async (req, res) => {
     const agents = await loadAgents();
     
     // Filter by language if requested
-    const { language } = req.query;
-    const filteredAgents = language 
-      ? agents.filter(agent => agent.language === language)
-      : agents;
+    const { language, category, subcategory, targetAudience } = req.query;
+    let filteredAgents = agents;
+    
+    if (language) {
+      filteredAgents = filteredAgents.filter(agent => agent.language === language);
+    }
+    
+    if (category) {
+      filteredAgents = filteredAgents.filter(agent => agent.category === category);
+    }
+    
+    if (subcategory) {
+      filteredAgents = filteredAgents.filter(agent => agent.subcategory === subcategory);
+    }
+    
+    if (targetAudience) {
+      filteredAgents = filteredAgents.filter(agent => 
+        agent.targetAudience && agent.targetAudience.includes(targetAudience)
+      );
+    }
     
     res.json({
       success: true,
@@ -94,10 +111,9 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST /api/agents - Create new agent (protected)
-router.post('/', async (req, res) => {
+// POST /api/agents - Create new agent (protected - admin only)
+router.post('/', authenticate, authorize(ROLES.ADMIN), async (req, res) => {
   try {
-    // TODO: Add authentication check
     const { id, ...agentData } = req.body;
     
     if (!id || !agentData.name) {
@@ -116,10 +132,13 @@ router.post('/', async (req, res) => {
       });
     }
     
-    // Create agent object
+    // Create agent object with default values for new fields
     const agent = {
       id,
       ...agentData,
+      category: agentData.category || 'healthcare',
+      subcategory: agentData.subcategory || 'general',
+      targetAudience: agentData.targetAudience || [],
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -141,10 +160,9 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT /api/agents/:id - Update agent (protected)
-router.put('/:id', async (req, res) => {
+// PUT /api/agents/:id - Update agent (protected - admin only)
+router.put('/:id', authenticate, authorize(ROLES.ADMIN), async (req, res) => {
   try {
-    // TODO: Add authentication check
     const agent = await loadAgent(req.params.id);
     
     if (!agent) {
@@ -179,10 +197,9 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE /api/agents/:id - Delete agent (protected)
-router.delete('/:id', async (req, res) => {
+// DELETE /api/agents/:id - Delete agent (protected - admin only)
+router.delete('/:id', authenticate, authorize(ROLES.ADMIN), async (req, res) => {
   try {
-    // TODO: Add authentication check
     const agent = await loadAgent(req.params.id);
     
     if (!agent) {
@@ -209,6 +226,33 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+// GET /api/agents/categories - List available categories
+router.get('/categories', async (req, res) => {
+  try {
+    const agents = await loadAgents();
+    
+    // Extract unique categories, subcategories, and target audiences
+    const categories = [...new Set(agents.map(agent => agent.category).filter(Boolean))];
+    const subcategories = [...new Set(agents.map(agent => agent.subcategory).filter(Boolean))];
+    const targetAudiences = [...new Set(
+      agents.flatMap(agent => agent.targetAudience || []).filter(Boolean)
+    )];
+    
+    res.json({
+      success: true,
+      categories,
+      subcategories,
+      targetAudiences
+    });
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch categories'
+    });
+  }
+});
+
 // GET /api/agents/search/:query - Search agents
 router.get('/search/:query', async (req, res) => {
   try {
@@ -219,6 +263,9 @@ router.get('/search/:query', async (req, res) => {
       agent.name.toLowerCase().includes(query) ||
       agent.role.toLowerCase().includes(query) ||
       agent.tagline.toLowerCase().includes(query) ||
+      (agent.category && agent.category.toLowerCase().includes(query)) ||
+      (agent.subcategory && agent.subcategory.toLowerCase().includes(query)) ||
+      (agent.targetAudience && agent.targetAudience.some(t => t.toLowerCase().includes(query))) ||
       agent.personality.specialties.some(s => s.toLowerCase().includes(query))
     );
     

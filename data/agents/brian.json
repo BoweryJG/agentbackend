@@ -38,5 +38,8 @@
   },
   "active": true,
   "language": "en",
-  "priority": 2
+  "priority": 2,
+  "category": "healthcare",
+  "subcategory": "dental",
+  "targetAudience": ["patients", "complex-cases"]
 }

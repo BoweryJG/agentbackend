@@ -48,5 +48,8 @@
   },
   "active": true,
   "language": "es",
-  "priority": 10
+  "priority": 10,
+  "category": "healthcare",
+  "subcategory": "dental",
+  "targetAudience": ["clinical-coordination", "bilingual"]
 }

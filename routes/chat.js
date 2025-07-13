@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { optionalAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
@@ -21,7 +22,7 @@ if (process.env.ANTHROPIC_API_KEY) {
 const conversations = new Map();
 
 // POST /api/chat - Start or continue a chat conversation
-router.post('/', async (req, res) => {
+router.post('/', optionalAuth, async (req, res) => {
   try {
     const { 
       agentId, 
@@ -29,6 +30,9 @@ router.post('/', async (req, res) => {
       conversationId = uuidv4(),
       clientId 
     } = req.body;
+    
+    // If authenticated, use the user's clientId
+    const effectiveClientId = req.user?.clientId || clientId || 'anonymous';
     
     if (!agentId || !message) {
       return res.status(400).json({
