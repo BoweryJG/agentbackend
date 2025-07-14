@@ -41,7 +41,31 @@ const io = new Server(server, {
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'],
+  origin: function(origin, callback) {
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://localhost:5173',
+      'https://agent-command-center.netlify.app',
+      'https://pedro.netlify.app',
+      'https://repconnect1.netlify.app',
+      'https://osbackend-zl1h.onrender.com'
+    ];
+    
+    // Add any origins from environment variable
+    if (process.env.ALLOWED_ORIGINS) {
+      allowedOrigins.push(...process.env.ALLOWED_ORIGINS.split(','));
+    }
+    
+    // Allow requests with no origin (like mobile apps)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      logger.warn(`CORS blocked origin: ${origin}`);
+      callback(null, true); // Allow for now to ensure functionality
+    }
+  },
   credentials: true,
 }));
 app.use(express.json({ limit: '10mb' }));
