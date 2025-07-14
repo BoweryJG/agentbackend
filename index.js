@@ -48,7 +48,19 @@ app.use(cors({
       'https://agent-command-center.netlify.app',
       'https://pedro.netlify.app',
       'https://repconnect1.netlify.app',
-      'https://osbackend-zl1h.onrender.com'
+      'https://osbackend-zl1h.onrender.com',
+      'https://gregpedromd.com',
+      'https://www.gregpedromd.com',
+      'http://gregpedromd.com',
+      'http://www.gregpedromd.com',
+      'https://repconnect.repspheres.com',
+      'https://www.repconnect.repspheres.com',
+      'http://repconnect.repspheres.com',
+      'http://www.repconnect.repspheres.com',
+      'https://repspheres.com',
+      'https://www.repspheres.com',
+      'http://repspheres.com',
+      'http://www.repspheres.com'
     ];
     
     // Add any origins from environment variable
