@@ -520,6 +520,68 @@ router.get('/sessions', authenticate, async (req, res) => {
   }
 });
 
+// POST /api/voices/preview - Generate voice preview
+router.post('/preview', async (req, res) => {
+  try {
+    const { voiceId, text, settings } = req.body;
+    
+    if (!voiceId || !text) {
+      return res.status(400).json({
+        error: 'Voice ID and text are required'
+      });
+    }
+    
+    // In a real implementation, this would call a TTS service
+    // For now, return a mock audio response
+    logger.info('Voice preview requested', { voiceId, textLength: text.length });
+    
+    // Create a simple WAV header for a silent audio file
+    const sampleRate = 44100;
+    const duration = 2; // 2 seconds
+    const numSamples = sampleRate * duration;
+    const numChannels = 1;
+    const bitsPerSample = 16;
+    const byteRate = sampleRate * numChannels * bitsPerSample / 8;
+    const blockAlign = numChannels * bitsPerSample / 8;
+    const dataSize = numSamples * blockAlign;
+    
+    const buffer = Buffer.alloc(44 + dataSize);
+    
+    // RIFF header
+    buffer.write('RIFF', 0);
+    buffer.writeUInt32LE(36 + dataSize, 4);
+    buffer.write('WAVE', 8);
+    
+    // fmt chunk
+    buffer.write('fmt ', 12);
+    buffer.writeUInt32LE(16, 16); // fmt chunk size
+    buffer.writeUInt16LE(1, 20); // audio format (PCM)
+    buffer.writeUInt16LE(numChannels, 22);
+    buffer.writeUInt32LE(sampleRate, 24);
+    buffer.writeUInt32LE(byteRate, 28);
+    buffer.writeUInt16LE(blockAlign, 32);
+    buffer.writeUInt16LE(bitsPerSample, 34);
+    
+    // data chunk
+    buffer.write('data', 36);
+    buffer.writeUInt32LE(dataSize, 40);
+    
+    // Fill with silence (zeros already from Buffer.alloc)
+    
+    res.set({
+      'Content-Type': 'audio/wav',
+      'Content-Length': buffer.length
+    });
+    
+    res.send(buffer);
+  } catch (error) {
+    logger.error('Error generating voice preview', { error: error.message });
+    res.status(500).json({
+      error: 'Failed to generate voice preview'
+    });
+  }
+});
+
 // Clean up old sessions periodically (runs every 5 minutes)
 setInterval(() => {
   const now = new Date();

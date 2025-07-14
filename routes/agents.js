@@ -283,4 +283,114 @@ router.get('/search/:query', async (req, res) => {
   }
 });
 
+// POST /api/agents/:id/test - Test agent with a message
+router.post('/:id/test', async (req, res) => {
+  try {
+    const agent = await loadAgent(req.params.id);
+    
+    if (!agent) {
+      return res.status(404).json({
+        success: false,
+        error: 'Agent not found'
+      });
+    }
+    
+    const { message, context } = req.body;
+    
+    // Simple mock response for testing
+    // In production, this would call the chat service
+    const mockResponses = [
+      `Hello! I'm ${agent.name}, ${agent.role}. ${agent.tagline}. How can I help you today?`,
+      `Thank you for your message. As ${agent.name}, I'm here to assist you with ${agent.personality.specialties.join(', ')}.`,
+      `I understand your concern. Let me help you with that. ${agent.personality.communication_style === 'friendly-professional' ? 'I\'m here to make this easy for you.' : 'Let\'s address this directly.'}`,
+      `Based on what you've told me, I can definitely help. My approach is ${agent.personality.approach}, and I'll make sure you feel comfortable throughout.`
+    ];
+    
+    const response = mockResponses[Math.floor(Math.random() * mockResponses.length)];
+    
+    res.json({
+      success: true,
+      response,
+      agent: {
+        id: agent.id,
+        name: agent.name,
+        role: agent.role
+      },
+      context,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error testing agent:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to test agent'
+    });
+  }
+});
+
+// POST /api/agents/:id/interact - Interactive chat with agent
+router.post('/:id/interact', async (req, res) => {
+  try {
+    const agent = await loadAgent(req.params.id);
+    
+    if (!agent) {
+      return res.status(404).json({
+        success: false,
+        error: 'Agent not found'
+      });
+    }
+    
+    const { message, sessionId, history } = req.body;
+    
+    // Generate contextual response based on agent personality
+    let response = '';
+    
+    // Check for greeting
+    if (message.toLowerCase().includes('hello') || message.toLowerCase().includes('hi')) {
+      response = `Hello! I'm ${agent.name}, your ${agent.role}. ${agent.tagline} How can I assist you today?`;
+    }
+    // Check for help request
+    else if (message.toLowerCase().includes('help')) {
+      response = `Of course! I specialize in ${agent.personality.specialties.join(', ')}. What specific area would you like help with?`;
+    }
+    // Check for appointment/scheduling
+    else if (message.toLowerCase().includes('appointment') || message.toLowerCase().includes('schedule')) {
+      if (agent.capabilities.scheduling) {
+        response = `I'd be happy to help you schedule an appointment. What day and time work best for you?`;
+      } else {
+        response = `I'll connect you with our scheduling team who can help you book an appointment.`;
+      }
+    }
+    // Default contextual response
+    else {
+      const responses = [
+        `I understand. Let me help you with that. ${agent.personality.traits.includes('Warm') ? 'You\'re in good hands.' : ''}`,
+        `Thank you for sharing that with me. Based on my experience with ${agent.personality.specialties[0]}, I can guide you through this.`,
+        `That's a great question. In my role as ${agent.role}, I often help patients with similar concerns.`,
+        `I appreciate you bringing this up. Let's work through this together, step by step.`
+      ];
+      response = responses[Math.floor(Math.random() * responses.length)];
+    }
+    
+    res.json({
+      success: true,
+      response,
+      sessionId: sessionId || `session-${Date.now()}`,
+      agent: {
+        id: agent.id,
+        name: agent.name,
+        role: agent.role,
+        avatar: agent.avatar
+      },
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error in agent interaction:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to process interaction'
+    });
+  }
+});
+
 export default router;
