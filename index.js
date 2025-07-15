@@ -248,4 +248,14 @@ server.listen(PORT, () => {
   logger.info(`AgentBackend server running on port ${PORT}`);
   logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
   logger.info(`CORS origins: ${process.env.ALLOWED_ORIGINS || 'http://localhost:3000'}`);
+  
+  // Log Supabase configuration status
+  logger.info(`Supabase URL configured: ${!!process.env.SUPABASE_URL}`);
+  logger.info(`Supabase Service Key configured: ${!!process.env.SUPABASE_SERVICE_ROLE_KEY}`);
+  
+  if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    logger.info('Supabase authentication is ACTIVE');
+  } else {
+    logger.warn('Using legacy authentication system');
+  }
 });
