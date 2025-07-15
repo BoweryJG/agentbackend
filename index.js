@@ -135,7 +135,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/agents', agentRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/deploy', deploymentRoutes);
-app.use('/api/voice', voiceRoutes);
+app.use('/api/voices', voiceRoutes);
 
 // WebSocket connection handling
 io.on('connection', (socket) => {
