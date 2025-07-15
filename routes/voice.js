@@ -3,6 +3,7 @@ import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import winston from 'winston';
+import { Buffer } from 'buffer';
 import { authenticate, optionalAuth, ROLES } from '../middleware/auth.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -577,7 +578,7 @@ router.post('/preview', async (req, res) => {
   } catch (error) {
     logger.error('Error generating voice preview', { error: error.message });
     res.status(500).json({
-      error: 'Failed to generate voice preview'
+      error: 'Internal server error'
     });
   }
 });
