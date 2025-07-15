@@ -2,7 +2,8 @@ import express from 'express';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { authenticate, authorize, ROLES } from '../middleware/auth.js';
+// Use Supabase auth instead of legacy auth
+import { authenticate, authorize, ROLES } from '../middleware/supabaseAuth.js';
 
 const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);

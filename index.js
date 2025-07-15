@@ -125,13 +125,15 @@ app.get('/api/status', (req, res) => {
 
 // Import routes
 import authRoutes from './routes/auth.js';
+import supabaseAuthRoutes from './routes/supabaseAuth.js';
 import agentRoutes from './routes/agents.js';
 import chatRoutes from './routes/chat.js';
 import deploymentRoutes from './routes/deployment.js';
 import voiceRoutes from './routes/voice.js';
 
 // Use routes
-app.use('/api/auth', authRoutes);
+app.use('/api/auth/legacy', authRoutes); // Keep legacy auth for backward compatibility
+app.use('/api/auth', supabaseAuthRoutes); // New Supabase auth routes
 app.use('/api/agents', agentRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/deploy', deploymentRoutes);
