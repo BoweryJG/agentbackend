@@ -393,4 +393,116 @@ router.post('/:id/interact', async (req, res) => {
   }
 });
 
+// POST /api/agents/:id/deploy/pedro - Deploy agent to Pedro platform
+router.post('/:id/deploy/pedro', async (req, res) => {
+  try {
+    const agent = await loadAgent(req.params.id);
+    
+    if (!agent) {
+      return res.status(404).json({
+        success: false,
+        error: 'Agent not found'
+      });
+    }
+    
+    // For now, just acknowledge the deployment request
+    // In production, this would sync with Pedro backend
+    console.log(`Deploying agent ${agent.id} to Pedro platform`);
+    
+    res.json({
+      success: true,
+      message: `Agent ${agent.name} deployed to Pedro platform`,
+      agent: {
+        id: agent.id,
+        name: agent.name,
+        platform: 'pedro'
+      },
+      deployedAt: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error deploying to Pedro:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to deploy agent to Pedro'
+    });
+  }
+});
+
+// POST /api/agents/:id/deploy/repconnect1 - Deploy agent to RepConnect1 platform
+router.post('/:id/deploy/repconnect1', async (req, res) => {
+  try {
+    const agent = await loadAgent(req.params.id);
+    
+    if (!agent) {
+      return res.status(404).json({
+        success: false,
+        error: 'Agent not found'
+      });
+    }
+    
+    // For now, just acknowledge the deployment request
+    // In production, this would sync with RepConnect1 backend
+    console.log(`Deploying agent ${agent.id} to RepConnect1 platform`);
+    
+    res.json({
+      success: true,
+      message: `Agent ${agent.name} deployed to RepConnect1 platform`,
+      agent: {
+        id: agent.id,
+        name: agent.name,
+        platform: 'repconnect1'
+      },
+      deployedAt: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error deploying to RepConnect1:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to deploy agent to RepConnect1'
+    });
+  }
+});
+
+// DELETE /api/agents/:id/deploy/:platform - Undeploy agent from platform
+router.delete('/:id/deploy/:platform', async (req, res) => {
+  try {
+    const { id, platform } = req.params;
+    const agent = await loadAgent(id);
+    
+    if (!agent) {
+      return res.status(404).json({
+        success: false,
+        error: 'Agent not found'
+      });
+    }
+    
+    if (!['pedro', 'repconnect1'].includes(platform)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid platform. Must be "pedro" or "repconnect1"'
+      });
+    }
+    
+    // For now, just acknowledge the undeployment request
+    console.log(`Undeploying agent ${agent.id} from ${platform} platform`);
+    
+    res.json({
+      success: true,
+      message: `Agent ${agent.name} undeployed from ${platform} platform`,
+      agent: {
+        id: agent.id,
+        name: agent.name,
+        platform
+      },
+      undeployedAt: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error(`Error undeploying from ${req.params.platform}:`, error);
+    res.status(500).json({
+      success: false,
+      error: `Failed to undeploy agent from ${req.params.platform}`
+    });
+  }
+});
+
 export default router;
