@@ -47,7 +47,7 @@ app.use(cors({
       'http://localhost:5173',
       'https://agent-command-center.netlify.app',
       'https://pedro.netlify.app',
-      'https://repconnect1.netlify.app',
+      'https://repconnect.netlify.app',
       'https://osbackend-zl1h.onrender.com',
       'https://gregpedromd.com',
       'https://www.gregpedromd.com',
