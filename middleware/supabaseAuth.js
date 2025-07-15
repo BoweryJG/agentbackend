@@ -1,11 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
-import dotenv from 'dotenv';
 
-dotenv.config();
-
-// Initialize Supabase client
+// Initialize Supabase client - directly from process.env
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+console.log('Supabase URL configured:', !!supabaseUrl);
+console.log('Supabase Service Key configured:', !!supabaseServiceKey);
 
 // Check if Supabase is configured
 const isSupabaseConfigured = supabaseUrl && supabaseServiceKey;
