@@ -7,16 +7,22 @@ dotenv.config();
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-if (!supabaseUrl || !supabaseServiceKey) {
-  console.error('Missing Supabase configuration. Please set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY');
+// Check if Supabase is configured
+const isSupabaseConfigured = supabaseUrl && supabaseServiceKey;
+
+if (!isSupabaseConfigured) {
+  console.warn('Supabase not configured. Using legacy auth. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY to enable Supabase auth.');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
-  }
-});
+// Only create Supabase client if configured
+export const supabase = isSupabaseConfigured 
+  ? createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    })
+  : null;
 
 // Role definitions (same as before)
 export const ROLES = {
@@ -32,6 +38,11 @@ const getUserRole = (user) => {
 
 // Verify Supabase JWT token
 export const verifySupabaseToken = async (token) => {
+  if (!supabase) {
+    console.warn('Supabase not configured, cannot verify token');
+    return null;
+  }
+  
   try {
     const { data: { user }, error } = await supabase.auth.getUser(token);
     
@@ -51,6 +62,12 @@ export const verifySupabaseToken = async (token) => {
 
 // Authentication middleware using Supabase
 export const authenticate = async (req, res, next) => {
+  // If Supabase is not configured, fall back to legacy auth
+  if (!supabase) {
+    const legacyAuth = await import('./auth.js');
+    return legacyAuth.authenticate(req, res, next);
+  }
+  
   try {
     const authHeader = req.headers.authorization;
     
@@ -167,6 +184,11 @@ export const optionalAuth = async (req, res, next) => {
 
 // Create or update user role
 export const setUserRole = async (userId, role, clientId = null) => {
+  if (!supabase) {
+    console.warn('Supabase not configured, cannot set user role');
+    return { success: false, error: 'Supabase not configured' };
+  }
+  
   try {
     const metadata = { role };
     if (clientId) {
@@ -189,6 +211,11 @@ export const setUserRole = async (userId, role, clientId = null) => {
 
 // Get user by email
 export const getUserByEmail = async (email) => {
+  if (!supabase) {
+    console.warn('Supabase not configured, cannot get user by email');
+    return null;
+  }
+  
   try {
     const { data, error } = await supabase.auth.admin.listUsers();
     

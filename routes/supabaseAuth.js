@@ -10,6 +10,19 @@ import {
 
 const router = express.Router();
 
+// Check if Supabase is configured
+if (!supabase) {
+  // Return a simple message if Supabase isn't configured
+  router.use((req, res) => {
+    res.status(503).json({
+      success: false,
+      error: 'Supabase authentication not configured. Please use legacy auth endpoints at /api/auth/legacy/*'
+    });
+  });
+  
+  export default router;
+}
+
 // POST /api/auth/callback - Handle Supabase auth callback
 router.post('/callback', async (req, res) => {
   try {
