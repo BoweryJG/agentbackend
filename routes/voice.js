@@ -3,7 +3,6 @@ import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import winston from 'winston';
-import { Buffer } from 'buffer';
 import { authenticate, optionalAuth, ROLES } from '../middleware/auth.js';
 
 const __filename = fileURLToPath(import.meta.url);
