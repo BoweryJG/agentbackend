@@ -19,9 +19,7 @@ if (!supabase) {
       error: 'Supabase authentication not configured. Please use legacy auth endpoints at /api/auth/legacy/*'
     });
   });
-  
-  export default router;
-}
+} else {
 
 // POST /api/auth/callback - Handle Supabase auth callback
 router.post('/callback', async (req, res) => {
@@ -254,5 +252,7 @@ router.post('/invite', authenticate, authorize(ROLES.ADMIN), async (req, res) =>
     });
   }
 });
+
+} // End of else block for Supabase configured
 
 export default router;
